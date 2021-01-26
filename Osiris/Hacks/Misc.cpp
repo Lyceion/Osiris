@@ -275,6 +275,48 @@ void Misc::watermark() noexcept
     }
 }
 
+ImVec2 textsize;
+void Misc::watermark(ImDrawList* bruh) noexcept
+{
+    if (config->misc.watermark.enabled) {
+        const bool connected = interfaces->engine->isConnected();
+        const auto [w, h] = ImGui::GetIO().DisplaySize;
+        time_t rawtime;
+        struct tm* timeinfo;
+        char buffer[80];
+        time(&rawtime);
+        timeinfo = localtime(&rawtime);
+        strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", timeinfo);
+        std::string str(buffer);
+        bruh->AddRectFilled( /* start */ ImVec2(w - (textsize.x + 91), 19), /* finish */ ImVec2(w - 29, 51), IM_COL32(45, 45, 45, 255), (30 / 4));
+        bruh->AddRectFilled( /* start */ ImVec2(w - (textsize.x + 90), 20), /* finish */ ImVec2(w - 30, 50), IM_COL32(33, 33, 33, 255), (30 / 4));
+        auto r1 = rainbowColor(1);
+        auto r3 = rainbowColor(3);
+        const int vert_start_idx = bruh->VtxBuffer.Size;
+        bruh->PathRect(ImVec2(w - (textsize.x + 91), 45), ImVec2(w - 29, 51), 6, 12);
+        bruh->PathFillConvex(IM_COL32_WHITE);
+        const int vert_end_idx = bruh->VtxBuffer.Size;
+        ImVec2 gradient_p0(ImVec2(w - (textsize.x + 91), 45));
+        ImVec2 gradient_p1(ImVec2(w - 29, 51));
+        ImGui::ShadeVertsLinearColorGradientKeepAlpha(bruh, vert_start_idx, vert_end_idx, gradient_p0, gradient_p1, IM_COL32(round(get<0>(r1) * 255.0), round(get<1>(r1) * 255.0), round(get<2>(r1) * 255.0), 255), IM_COL32(round(get<0>(r3) * 255.0), round(get<1>(r3) * 255.0), round(get<2>(r3) * 255.0), 255));
+        if (connected) {
+            const bool choking = interfaces->engine->getNetworkChannel()->chokedPackets > 1;
+
+            float latency = 0.0f;
+            if (auto networkChannel = interfaces->engine->getNetworkChannel(); networkChannel && networkChannel->getLatency(0) > 0.0f)
+                latency = networkChannel->getLatency(0);
+            const char* watermark_text = ("SUPERPASTE | Hello, VersteckteKrone! | " + str + " | out " + std::to_string(static_cast<int>(latency * 1000)) + " ms | choking " + (choking ? "true" : "false")).c_str();
+            textsize = ImGui::CalcTextSize(watermark_text);
+            bruh->AddText(ImVec2(w - (textsize.x + 60), 20 + (30 - textsize.y) / 2), IM_COL32(round(config->misc.watermark.color[0] * 255.0), round(config->misc.watermark.color[1] * 255.0), round(config->misc.watermark.color[2] * 255.0), 255), watermark_text);
+        }
+        else {
+            const char* watermark_text = ("SUPERPASTE | Hello, VersteckteKrone! | unconnected | " + str).c_str();
+            textsize = ImGui::CalcTextSize(watermark_text);
+            bruh->AddText(ImVec2(w - (textsize.x + 60), 20 + (30 - textsize.y) / 2), IM_COL32(round(config->misc.watermark.color[0] * 255.0), round(config->misc.watermark.color[1] * 255.0), round(config->misc.watermark.color[2] * 255.0), 255), watermark_text);
+        }
+    }
+}
+
 static bool prepareRevolverActive;
 
 void Misc::prepareRevolver(UserCmd* cmd) noexcept
@@ -1017,4 +1059,44 @@ void Misc::updateInput() noexcept
     slowwalkActive = config->misc.slowwalkKey.isDown();
     prepareRevolverActive = config->misc.prepareRevolverKey == KeyBind::NONE || config->misc.prepareRevolverKey.isDown();
     chokePacketsActive = config->misc.chokedPacketsKey == KeyBind::NONE || config->misc.chokedPacketsKey.isDown();
+}
+
+static int ticks = 0;
+int ticksMax = 16;
+
+void Misc::FakeLag(UserCmd* cmd, bool& sendPacket) noexcept
+{
+    if (!config->misc.fakelag.enabled)
+        return;
+
+    if (!localPlayer || !localPlayer->isAlive())
+        return;
+
+    if (localPlayer->flags() & 1)
+        return;
+    
+    if (cmd->buttons & cmd->IN_ATTACK) {
+        sendPacket = true;
+        return;
+    }
+
+    if (ticks >= ticksMax) {
+        sendPacket = true;
+        ticks = 0;
+    }
+    else {
+        int packetsToChoke;
+        if (localPlayer->velocity().length() > 0.f) {
+            packetsToChoke = (int)((64.f / memory->globalVars->intervalPerTick) / localPlayer->velocity().length()) + 1;
+            if (packetsToChoke >= ticksMax - 1)
+                packetsToChoke = ticksMax - 2;
+            if (packetsToChoke < config->misc.fakelag.lagAmount)
+                packetsToChoke = config->misc.fakelag.lagAmount;
+        }
+        else
+            packetsToChoke = 0;
+        sendPacket = ticks < 16 - packetsToChoke;
+    }
+    ticks++;
+
 }

@@ -262,7 +262,23 @@ public:
         } reportbot;
 
         OffscreenEnemies offscreenEnemies;
+
+        struct FakeLag {
+            bool enabled{ false };
+            int lagAmount = 9;
+        } fakelag;
     } misc;
+
+    struct Grief {
+        struct Blockbot {
+            bool enabled{ false };
+            KeyBind key = KeyBind::NONE;
+        } blockbot;
+        struct JumpBlock {
+            bool enabled{ false };
+            KeyBind key = KeyBind::NONE;
+        } jumpblock;
+    } grief;
 
     void scheduleFontLoad(const std::string& name) noexcept;
     bool loadScheduledFonts() noexcept;

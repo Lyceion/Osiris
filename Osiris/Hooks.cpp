@@ -42,6 +42,7 @@
 #include "Hacks/SkinChanger.h"
 #include "Hacks/Triggerbot.h"
 #include "Hacks/Visuals.h"
+#include "Hacks/Grief.h"
 
 #include "SDK/Engine.h"
 #include "SDK/Entity.h"
@@ -72,7 +73,7 @@ static LRESULT __stdcall wndProc(HWND window, UINT msg, WPARAM wParam, LPARAM lP
 
         ImGui::CreateContext();
         ImGui_ImplWin32_Init(window);
-        config = std::make_unique<Config>("Osiris");
+        config = std::make_unique<Config>("SUPERPASTE");
         gui = std::make_unique<GUI>();
 
         hooks->install();
@@ -92,13 +93,12 @@ static HRESULT __stdcall present(IDirect3DDevice9* device, const RECT* src, cons
 {
     [[maybe_unused]] static bool imguiInit{ ImGui_ImplDX9_Init(device) };
 
-    if (config->loadScheduledFonts())
-        ImGui_ImplDX9_DestroyFontsTexture();
+    static ImDrawList* _Back = ImGui::GetBackgroundDrawList();
+    static auto returnAddress = _ReturnAddress();
 
-    ImGui_ImplDX9_NewFrame();
-    ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
+    if (returnAddress == _ReturnAddress()) {
 
+<<<<<<< Updated upstream
     StreamProofESP::render();
     Misc::purchaseList();
     Misc::noscopeCrosshair(ImGui::GetBackgroundDrawList());
@@ -107,24 +107,42 @@ static HRESULT __stdcall present(IDirect3DDevice9* device, const RECT* src, cons
     Misc::drawBombTimer();
     Visuals::hitMarker(nullptr, ImGui::GetBackgroundDrawList());
     Visuals::drawMolotovHull(ImGui::GetBackgroundDrawList());
+=======
+        if (config->loadScheduledFonts())
+            ImGui_ImplDX9_DestroyFontsTexture();
+>>>>>>> Stashed changes
 
-    Aimbot::updateInput();
-    Visuals::updateInput();
-    StreamProofESP::updateInput();
-    Misc::updateInput();
-    Triggerbot::updateInput();
+        ImGui_ImplDX9_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+        ImGui::NewFrame();
 
-    gui->handleToggle();
+        StreamProofESP::render();
+        Misc::purchaseList();
+        Misc::noscopeCrosshair(_Back);
+        Misc::recoilCrosshair(_Back);
+        Misc::drawOffscreenEnemies(_Back);
+        Misc::drawBombTimer();
+        Misc::watermark(_Back);
+        Visuals::hitMarker(nullptr, _Back);
 
-    if (gui->isOpen())
-        gui->render();
+        Aimbot::updateInput();
+        Visuals::updateInput();
+        StreamProofESP::updateInput();
+        Misc::updateInput();
+        Triggerbot::updateInput();
 
-    ImGui::EndFrame();
-    ImGui::Render();
+        gui->handleToggle();
 
-    if (device->BeginScene() == D3D_OK) {
-        ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-        device->EndScene();
+        if (gui->isOpen())
+            gui->render();
+
+        ImGui::EndFrame();
+        ImGui::Render();
+
+        if (device->BeginScene() == D3D_OK) {
+            ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+            device->EndScene();
+        }
     }
 
     return hooks->originalPresent(device, src, dest, windowOverride, dirtyRegion);
@@ -176,6 +194,9 @@ static bool __STDCALL createMove(LINUX_ARGS(void* thisptr,) float inputSampleTim
     Misc::quickReload(cmd);
     Misc::fixTabletSignal();
     Misc::slowwalk(cmd);
+    Misc::FakeLag(cmd, sendPacket);
+    Grief::runJumpBlock(cmd);
+    Grief::runNormalBlock(cmd);
 
 #ifdef _WIN32
     EnginePrediction::run(cmd);
@@ -265,7 +286,6 @@ static void __STDCALL paintTraverse(unsigned int panel, bool forceRepaint, bool 
 {
     if (interfaces->panel->getName(panel) == "MatSystemTopPanel") {
         Misc::spectatorList();
-        Misc::watermark();
     }
     hooks->panel.callOriginal<void, 41>(panel, forceRepaint, allowForce);
 }

@@ -67,24 +67,7 @@ GUI::GUI() noexcept
 
 void GUI::render() noexcept
 {
-    if (!config->style.menuStyle) {
-        renderMenuBar();
-        renderAimbotWindow();
-        renderAntiAimWindow();
-        renderTriggerbotWindow();
-        renderBacktrackWindow();
-        Glow::drawGUI(false);
-        renderChamsWindow();
-        renderStreamProofESPWindow();
-        renderVisualsWindow();
-        renderSkinChangerWindow();
-        renderSoundWindow();
-        renderStyleWindow();
-        renderMiscWindow();
-        renderConfigWindow();
-    } else {
-        renderGuiStyle2();
-    }
+    renderGui();
 }
 
 void GUI::updateColors() const noexcept
@@ -130,35 +113,6 @@ void GUI::handleToggle() noexcept
 #ifndef _WIN32
         ImGui::GetIO().MouseDrawCursor = gui->open;
 #endif
-    }
-}
-
-static void menuBarItem(const char* name, bool& enabled) noexcept
-{
-    if (ImGui::MenuItem(name)) {
-        enabled = true;
-        ImGui::SetWindowFocus(name);
-        ImGui::SetWindowPos(name, { 100.0f, 100.0f });
-    }
-}
-
-void GUI::renderMenuBar() noexcept
-{
-    if (ImGui::BeginMainMenuBar()) {
-        menuBarItem("Aimbot", window.aimbot);
-        menuBarItem("Anti aim", window.antiAim);
-        menuBarItem("Triggerbot", window.triggerbot);
-        menuBarItem("Backtrack", window.backtrack);
-        Glow::menuBarItem();
-        menuBarItem("Chams", window.chams);
-        menuBarItem("ESP", window.streamProofESP);
-        menuBarItem("Visuals", window.visuals);
-        menuBarItem("Skin changer", window.skinChanger);
-        menuBarItem("Sound", window.sound);
-        menuBarItem("Style", window.style);
-        menuBarItem("Misc", window.misc);
-        menuBarItem("Config", window.config);
-        ImGui::EndMainMenuBar();   
     }
 }
 
@@ -1214,35 +1168,6 @@ void GUI::renderSoundWindow(bool contentOnly) noexcept
         ImGui::End();
 }
 
-void GUI::renderStyleWindow(bool contentOnly) noexcept
-{
-    if (!contentOnly) {
-        if (!window.style)
-            return;
-        ImGui::SetNextWindowSize({ 0.0f, 0.0f });
-        ImGui::Begin("Style", &window.style, windowFlags);
-    }
-
-    ImGui::PushItemWidth(150.0f);
-    if (ImGui::Combo("Menu style", &config->style.menuStyle, "Classic\0One window\0"))
-        window = { };
-    if (ImGui::Combo("Menu colors", &config->style.menuColors, "Dark\0Light\0Classic\0Custom\0"))
-        updateColors();
-    ImGui::PopItemWidth();
-
-    if (config->style.menuColors == 3) {
-        ImGuiStyle& style = ImGui::GetStyle();
-        for (int i = 0; i < ImGuiCol_COUNT; i++) {
-            if (i && i & 3) ImGui::SameLine(220.0f * (i & 3));
-
-            ImGuiCustom::colorPicker(ImGui::GetStyleColorName(i), (float*)&style.Colors[i], &style.Colors[i].w);
-        }
-    }
-
-    if (!contentOnly)
-        ImGui::End();
-}
-
 void GUI::renderMiscWindow(bool contentOnly) noexcept
 {
     if (!contentOnly) {
@@ -1413,12 +1338,28 @@ void GUI::renderMiscWindow(bool contentOnly) noexcept
     }
     ImGui::PopID();
 
+    ImGui::Checkbox("FakeLag", &config->misc.fakelag.enabled);
+    ImGui::SliderInt("Fakelag Amount", &config->misc.fakelag.lagAmount, 0, 16);
+
     if (ImGui::Button("Unhook"))
         hooks->uninstall();
 
     ImGui::Columns(1);
     if (!contentOnly)
         ImGui::End();
+}
+
+void GUI::renderGriefWindow(bool contentOnly) noexcept {
+    if (!contentOnly) {
+        if (!window.grief)
+            return;
+        ImGui::SetNextWindowSize({ 0.0f, 0.0f });
+        ImGui::Begin("Grief", &window.grief, windowFlags);
+    }
+    ImGui::Checkbox("Block Bot", &config->grief.blockbot.enabled);
+    hotkey2("BB", config->grief.blockbot.key);
+    ImGui::Checkbox("Jump Block", &config->grief.jumpblock.enabled);
+    hotkey2("JB", config->grief.jumpblock.key);
 }
 
 void GUI::renderConfigWindow(bool contentOnly) noexcept
@@ -1531,9 +1472,9 @@ void GUI::renderConfigWindow(bool contentOnly) noexcept
             ImGui::End();
 }
 
-void GUI::renderGuiStyle2() noexcept
+void GUI::renderGui() noexcept
 {
-    ImGui::Begin("Osiris", nullptr, windowFlags | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("SUPERPASTE", nullptr, windowFlags | ImGuiWindowFlags_AlwaysAutoResize);
 
     if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyScroll | ImGuiTabBarFlags_NoTooltip)) {
         if (ImGui::BeginTabItem("Aimbot")) {
@@ -1573,12 +1514,12 @@ void GUI::renderGuiStyle2() noexcept
             renderSoundWindow(true);
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Style")) {
-            renderStyleWindow(true);
-            ImGui::EndTabItem();
-        }
         if (ImGui::BeginTabItem("Misc")) {
             renderMiscWindow(true);
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Grief")) {
+            renderGriefWindow(true);
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Config")) {
@@ -1587,6 +1528,5 @@ void GUI::renderGuiStyle2() noexcept
         }
         ImGui::EndTabBar();
     }
-
     ImGui::End();
 }

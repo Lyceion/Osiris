@@ -15,7 +15,6 @@ private:
     bool open = true;
 
     void updateColors() const noexcept;
-    void renderMenuBar() noexcept;
     void renderAimbotWindow(bool contentOnly = false) noexcept;
     void renderAntiAimWindow(bool contentOnly = false) noexcept;
     void renderTriggerbotWindow(bool contentOnly = false) noexcept;
@@ -25,10 +24,10 @@ private:
     void renderVisualsWindow(bool contentOnly = false) noexcept;
     void renderSkinChangerWindow(bool contentOnly = false) noexcept;
     void renderSoundWindow(bool contentOnly = false) noexcept;
-    void renderStyleWindow(bool contentOnly = false) noexcept;
     void renderMiscWindow(bool contentOnly = false) noexcept;
+    void renderGriefWindow(bool contentOnly = false) noexcept;
     void renderConfigWindow(bool contentOnly = false) noexcept;
-    void renderGuiStyle2() noexcept;
+    void renderGui() noexcept;
 
     struct {
         bool aimbot = false;
@@ -40,8 +39,8 @@ private:
         bool visuals = false;
         bool skinChanger = false;
         bool sound = false;
-        bool style = false;
         bool misc = false;
+        bool grief = false;
         bool config = false;
     } window;
 

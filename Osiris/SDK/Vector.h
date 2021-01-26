@@ -3,15 +3,30 @@
 #include <cmath>
 
 #include "Utils.h"
+#include "QAngle.h"
+
+#define M_PI			3.1415
+#define DEG2RAD( a )	((a)*(M_PI/180.0f))
+#define RAD2DEG( a )	((a)*(180.0f/M_PI))
 
 class matrix3x4;
 
 struct Vector {
+    auto rotate(double angle) {
+        float cs = std::cos(degreesToRadians(angle));
+        float sn = std::sin(degreesToRadians(angle));
+
+        float px = x * cs - y * sn;
+        float py = x * sn + y * cs;
+        x = px;
+        y = py;
+        return *this;
+    }
     constexpr auto notNull() const noexcept
     {
         return x || y || z;
     }
-    
+
     constexpr auto operator==(const Vector& v) const noexcept
     {
         return x == v.x && y == v.y && z == v.z;
@@ -71,7 +86,7 @@ struct Vector {
     {
         return Vector{ x + v.x, y + v.y, z + v.z };
     }
-    
+
     constexpr auto operator*(const Vector& v) const noexcept
     {
         return Vector{ x * v.x, y * v.y, z * v.z };
@@ -108,6 +123,14 @@ struct Vector {
         return *this;
     }
 
+    Vector& normalize180() noexcept
+    {
+        x = std::isfinite(x) ? std::remainder(x, 180.0f) : 0.0f;
+        y = std::isfinite(y) ? std::remainder(y, 180.0f) : 0.0f;
+        z = 0.0f;
+        return *this;
+    }
+
     auto length() const noexcept
     {
         return std::sqrt(x * x + y * y + z * z);
@@ -140,6 +163,13 @@ struct Vector {
         return Vector{ radiansToDegrees(std::atan2(-z, std::hypot(x, y))),
                        radiansToDegrees(std::atan2(y, x)),
                        0.0f };
+    }
+
+    auto toQAngle() const noexcept
+    {
+        return QAngle(radiansToDegrees(std::atan2(-z, std::hypot(x, y))),
+            radiansToDegrees(std::atan2(y, x)),
+            0.0f);
     }
 
     static auto fromAngle(const Vector& angle) noexcept

@@ -15,6 +15,7 @@ namespace Misc
     void noscopeCrosshair(ImDrawList* drawlist) noexcept;
     void recoilCrosshair(ImDrawList* drawList) noexcept;
     void watermark() noexcept;
+    void watermark(ImDrawList* bruh) noexcept;
     void prepareRevolver(UserCmd*) noexcept;
     void fastPlant(UserCmd*) noexcept;
     void fastStop(UserCmd*) noexcept;
@@ -48,6 +49,7 @@ namespace Misc
     void preserveKillfeed(bool roundStart = false) noexcept;
     void drawOffscreenEnemies(ImDrawList* drawList) noexcept;
     void autoAccept(const char* soundEntry) noexcept;
+    void FakeLag(UserCmd* cmd, bool& sendPacket) noexcept;
 
     void updateInput() noexcept;
 }
