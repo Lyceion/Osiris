@@ -3,6 +3,8 @@
 
 Free open-source cross-platform cheat software for **Counter-Strike: Global Offensive** game but implemented some new features. Designed as an internal cheat - [Dynamic-link library](https://en.wikipedia.org/wiki/Dynamic-link_library) (DLL) loadable into game process. Compatible with the Steam version of the game. Available for Windows and Linux systems.
 
+Huge thx to [@septillioner](https://github.com/septillioner)
+
 ## Features
 *   **Aimbot** - aim assistance
 *   **Triggerbot** - automatically fires when crosshair is on enemy
@@ -264,7 +266,7 @@ When you have equipped a copy of the source code, next step is opening **Osiris.
 
 Then change build configuration to `Release | x86` and simply press **Build solution**.
 
-If everything went right you should receive `Osiris.dll`  binary file.
+If everything went right you should receive `SUPERPASTE.dll`  binary file.
 
 ### Loading / Injecting into game process
 
@@ -281,27 +283,10 @@ If your CPU supports AVX / AVX2 / AVX-512 instruction set, you can enable it in 
 Press <kbd>INSERT</kbd> while focused on CS:GO window.
 
 ### Where is my config file saved?
-Configuration files are saved inside `Osiris` folder in your `Documents` folder (`%USERPROFILE%\Documents\Osiris`). The config is in human readable format and can be edited (e.g, using notepad). Sometimes after updates configuration file needs to be deleted and recreated.
-
-### What hooking methods Osiris uses?
-Currently implemented hooking methods are:
-*   MinHook - trampoline hook
-*   VmtHook - hook a function directly in a vtable
-*   VmtSwap - create a copy of a vtable and swap the pointer on the class instance
-
-Hooking implementation files are located in [Hooks](https://github.com/danielkrupinski/Osiris/tree/master/Osiris/Hooks) directory.
-
-## Acknowledgments
-
-*   [ocornut](https://github.com/ocornut) and [contributors](https://github.com/ocornut/imgui/graphs/contributors) for creating and maintaining an amazing GUI library - [Dear imgui](https://github.com/ocornut/imgui).
-*   [Zer0Mem0ry](https://github.com/Zer0Mem0ry) - for great tutorials on reverse engineering and game hacking
+Configuration files are saved inside `SUPERPASTE` folder in your `Documents` folder (`%USERPROFILE%\Documents\SUPERPASTE`). The config is in human readable format and can be edited (e.g, using notepad). Sometimes after updates configuration file needs to be deleted and recreated.
 
 ## License
 
 > Copyright (c) 2018-2021 Daniel Krupiński
 
 This project is licensed under the [MIT License](https://opensource.org/licenses/mit-license.php) - see the [LICENSE](https://github.com/danielkrupinski/Osiris/blob/master/LICENSE) file for details.
-
-## See also
-*   [Anubis](https://github.com/danielkrupinski/Anubis) - free and open source cheat for CS:GO with configuration compatible with Osiris
-*   [GOESP](https://github.com/danielkrupinski/GOESP) - free and open source cross-platform streamproof ESP hack for Counter-Strike: Global Offensive, written in modern C++
